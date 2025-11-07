@@ -2,7 +2,9 @@ import { Button } from "@/components/ui/button";
 import { createClient as createServer } from "@/utils/supabase/server";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import Editor from "@/components/Editor";
+import EmotionChart from "@/components/EmotionChart";
 import Chat from "@/components/Chat";
+import Recomendation from "@/components/Recomendation";
 export default async function ProfilePage() {
   const supabase = await createServer();
 
@@ -20,8 +22,16 @@ export default async function ProfilePage() {
   
       <div className="flex-2">
           <Editor/>
+
           </div> 
-          <Chat/>
+          <div className="flex-1">
+              <EmotionChart/>
+              <Recomendation/>
+
+
+          </div>
+                            
+
     </div>
   );
 }

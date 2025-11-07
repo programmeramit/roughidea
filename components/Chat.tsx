@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "./ui/button";
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
+
 
 type Message = {
   role: "user" | "bot";
@@ -18,11 +19,16 @@ export default function Chat() {
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null)
+
+  
 
   const handleSend = async () => {
     if (!inputRef.current?.value.trim()) return;
 
     const userText = inputRef.current.value.trim();
+
+  
 
     // Push user message
     setMessages((prev) => [...prev, { role: "user", content: userText }]);
@@ -40,9 +46,9 @@ export default function Chat() {
       });
 
       const data = await res.json();
-
+      console.log(data)
       const botText =
-        data?.choices?.[0]?.message?.content ??
+      data ??
         "⚠️ Sorry, I couldn’t process your request.";
 
       setMessages((prev) => [...prev, { role: "bot", content: botText }]);
@@ -65,8 +71,19 @@ export default function Chat() {
     }
   };
 
+  useEffect(()=>{
+      inputRef.current?.addEventListener('keydown',(e)=>{
+        if(e.key === "Enter"){
+          buttonRef.current?.click()
+          inputRef.current?.focus()
+        }
+      })
+
+      return ()=> inputRef.current?.removeEventListener('keydown',()=>{console.log("chat componnet is unmount")})
+  },[])
+
   return (
-    <div className="flex-1 h-[100dvh] bg-gray-900 text-gray-100 flex flex-col">
+    <div className="flex-1 h-[100dvh] bg-gray-100 text-gray-100 flex flex-col">
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3 max-w-full m-2">
         {messages.length === 0 ? (
@@ -126,7 +143,7 @@ export default function Chat() {
             className="flex-1 p-3 rounded-2xl bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-400"
             disabled={loading}
           />
-          <Button onClick={handleSend} disabled={loading}>
+          <Button onClick={handleSend} disabled={loading} ref={buttonRef}>
             {loading ? "..." : "Send"}
           </Button>
         </div>
