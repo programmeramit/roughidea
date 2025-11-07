@@ -6,13 +6,13 @@ import { StateGraph, MessagesAnnotation, START, END } from "@langchain/langgraph
 // Initialize LLM
 const llm = new ChatGoogleGenerativeAI({
   model: "gemini-2.5-flash",
-  apiKey: "AIzaSyA1td6t9F-kmG2RbGIXOmXK2Wgnk0uE-jA",
+  apiKey: process.env.GEMMINI_DATA,
   temperature: 0.7,
 });
 
 // Step 1 — Define a node function
 async function llmNode(state: typeof MessagesAnnotation.State) {
-  const system = "you are the emotion generater of the sentence. write the sentence of given word in array of 5 tones of joy."
+  const system = "provide me a recommendation of the given text and give how much it engage audience ie {suggestion:text,message:how it can improve }"
   const result = await llm.invoke([
     {
       role:"system",
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
   const response = await graph.invoke({
     messages: [{ role: "user", content: message }]
   });
-  console.log(response.messages[0].content)
+  console.log(response.messages[0])
 
   return NextResponse.json(response.messages[0]);
 }
