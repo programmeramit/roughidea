@@ -17,7 +17,8 @@ async function llmNode(state: typeof MessagesAnnotation.State) {
     {
       role:"system",
       content:system
-    }
+    },
+    ...state.messages
   ]
   );
   return { messages: [result] };
@@ -35,9 +36,9 @@ export async function POST(req: Request) {
   const { message } = await req.json();
 
   const response = await graph.invoke({
-    messages: [{ role: "user", content: message }],
+    messages: [{ role: "user", content: message }]
   });
-  console.log(message)
+  console.log(response.messages[0].content)
 
-  return NextResponse.json(response);
+  return NextResponse.json(response.messages[0]);
 }
