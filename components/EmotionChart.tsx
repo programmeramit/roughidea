@@ -5,7 +5,7 @@ import * as d3 from "d3";
 import { gsap } from "gsap";
 import { useChatData } from "@/tools/store";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Smile, Frown, Angry, Heart, Meh } from "lucide-react";
+import { Smile } from "lucide-react";
 
 interface EmotionResult {
   sentence: string;
@@ -16,17 +16,6 @@ interface EmotionResult {
 interface EmotionChartProps extends PropsWithChildren {
   emotions: Record<string, EmotionResult>;
 }
-
-// Icon mapping for legend
-const emotionIcons: Record<string, JSX.Element> = {
-  joy: <Smile className="w-4 h-4 text-yellow-500" />,
-  happiness: <Smile className="w-4 h-4 text-yellow-500" />,
-  love: <Heart className="w-4 h-4 text-pink-500" />,
-  anger: <Angry className="w-4 h-4 text-red-500" />,
-  sadness: <Frown className="w-4 h-4 text-blue-500" />,
-  fear: <Meh className="w-4 h-4 text-purple-500" />,
-  neutral: <Meh className="w-4 h-4 text-gray-500" />,
-};
 
 const EmotionChart: React.FC<EmotionChartProps> = () => {
   const chartRef = useRef<HTMLDivElement | null>(null);
@@ -69,10 +58,8 @@ const EmotionChart: React.FC<EmotionChartProps> = () => {
       .domain([0, 1])
       .range([height - margin.bottom, margin.top]);
 
-    const color = d3
-      .scaleOrdinal<string>()
-      .domain(emotionKeys)
-      .range(d3.schemeSet2);
+    // Unified color
+    const chartColor = "#a48fff";
 
     // X Axis
     svg
@@ -81,7 +68,7 @@ const EmotionChart: React.FC<EmotionChartProps> = () => {
       .call(d3.axisBottom(x))
       .selectAll("text")
       .style("font-size", "12px")
-      .style("fill", "#666");
+      .style("fill", "#6b6b6b");
 
     // Y Axis
     svg
@@ -92,26 +79,28 @@ const EmotionChart: React.FC<EmotionChartProps> = () => {
       )
       .selectAll("text")
       .style("font-size", "12px")
-      .style("fill", "#666");
+      .style("fill", "#6b6b6b");
 
-    // Lines and dots
+    // Line function
     const line = d3
       .line<{ id: string; label: string; score: number }>()
       .x((d: any) => x(d.id)! + x.bandwidth() / 2)
       .y((d: any) => y(d.score))
       .curve(d3.curveMonotoneX);
 
+    // Draw paths and dots
     grouped.forEach((values: any, emotion: any) => {
       const path = svg
         .append("path")
         .datum(values)
         .attr("fill", "none")
-        .attr("stroke", color(emotion)!)
-        .attr("stroke-width", 2)
+        .attr("stroke", chartColor)
+        .attr("stroke-width", 2.5)
         .attr("d", line)
         .attr("opacity", 0);
 
       const totalLength = path.node()?.getTotalLength() ?? 0;
+
       path
         .attr("stroke-dasharray", totalLength)
         .attr("stroke-dashoffset", totalLength);
@@ -131,7 +120,7 @@ const EmotionChart: React.FC<EmotionChartProps> = () => {
         .attr("cx", (d) => x(d.id)! + x.bandwidth() / 2)
         .attr("cy", (d) => y(d.score))
         .attr("r", 0)
-        .attr("fill", color(emotion)!);
+        .attr("fill", chartColor);
 
       gsap.to(dots.nodes(), {
         duration: 0.6,
@@ -142,7 +131,7 @@ const EmotionChart: React.FC<EmotionChartProps> = () => {
       });
     });
 
-    // Legend
+    // Legend (same color)
     const legend = svg
       .append("g")
       .attr("transform", `translate(${width - margin.right + 20}, ${margin.top})`);
@@ -153,7 +142,7 @@ const EmotionChart: React.FC<EmotionChartProps> = () => {
         .attr("cx", 0)
         .attr("cy", i * 25)
         .attr("r", 6)
-        .attr("fill", color(key)!);
+        .attr("fill", chartColor);
 
       legend
         .append("text")
@@ -161,22 +150,21 @@ const EmotionChart: React.FC<EmotionChartProps> = () => {
         .attr("y", i * 25 + 5)
         .text(key)
         .style("font-size", "13px")
-        .style("fill", "#444");
+        .style("fill", "#4a4a4a");
     });
   }, [emotions]);
 
   return (
-    <Card className="flex-1 bg-white/70 backdrop-blur-sm border border-gray-100 shadow-md rounded-2xl p-4 relative">
+    <Card className="flex-1 bg-white/70 backdrop-blur-sm border border-gray-200 shadow-md rounded-2xl p-4 relative">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-          <Smile className="w-5 h-5 text-yellow-500" />
+          <Smile className="w-5 h-5 text-[#a48fff]" />
           Emotion Chart
         </CardTitle>
       </CardHeader>
 
       <CardContent>
         <div ref={chartRef} className="w-full h-[300px]" />
-        
       </CardContent>
     </Card>
   );

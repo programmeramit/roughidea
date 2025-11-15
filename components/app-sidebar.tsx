@@ -12,61 +12,38 @@ import {
   LayoutDashboard,
   FolderKanban,
   Settings,
-  ChevronLeft,
-  ChevronRight,
   Clock,
   User,
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 
-export function AppSidebar() {
+export async function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const router = useRouter()
+  const supabase = await createClient()
 
+  const logout = async()=>{
+    const {error} = await supabase.auth.signOut()
+    router.push("/")
+  }
   return (
-    <Sidebar
-      className={`
-        ${collapsed ? "w-20" : "w-64"} 
-        min-h-screen 
-        bg-gradient-to-b from-amber-50 via-orange-50/60 to-rose-50/60
-        dark:from-gray-900 dark:via-gray-800 dark:to-gray-900
-        text-gray-800 dark:text-gray-100
-        border-r border-gray-200/60 dark:border-gray-700/50
-        backdrop-blur-md
-        shadow-lg
-        flex flex-col
-        transition-all duration-300 ease-in-out
-      `}
-    >
+    <Sidebar className="bg-green-300">
       {/* Header */}
       <SidebarHeader
         className={`px-5 py-4 border-b border-gray-200/60 dark:border-gray-700/50 flex items-center justify-between ${
           collapsed ? "px-3 justify-center" : ""
         }`}
       >
-        {!collapsed ? (
-          <div className="flex items-center gap-2">
-            <Sparkles className="text-amber-500" size={20} />
-            <div>
-              <h1 className="text-xl font-semibold">RoughIdea</h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Turn ideas into emotions 💡
-              </p>
-            </div>
-          </div>
-        ) : (
-          <Sparkles className="text-amber-500" size={22} />
-        )}
+        <div className="flex gap-2 items-center">
 
-        {/* Collapse Toggle */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="p-1 hover:bg-gray-100/60 dark:hover:bg-gray-800/60 rounded-md"
-          onClick={() => setCollapsed((prev) => !prev)}
-        >
-          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-        </Button>
+<span className="font-bold text-2xl text-[#5A6960]">Rough Idea</span>      
+        </div>
+          
+
+        
       </SidebarHeader>
 
       {/* Content */}
@@ -143,6 +120,7 @@ export function AppSidebar() {
               </p>
             </div>
             <div className="text-gray-400 text-xl select-none">|||</div>
+            <Button type="button" onClick={logout}>Sign Out</Button>
           </div>
         )}
       </SidebarFooter>

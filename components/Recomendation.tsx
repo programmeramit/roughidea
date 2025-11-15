@@ -20,11 +20,11 @@ function Recomendation() {
             if(item.score > 0.8) return 
             if (item.sentence.length < 5) return
             console.log(item)
-            const res = fakecall(item.sentence).then((res)=>res)
-            console.log({
-                text:item.sentence,
-                more_accuracy: res
-            })            
+            // const res = fakecall(item.sentence).then((res)=>res)
+            // console.log({
+            //     text:item.sentence,
+            //     more_accuracy: res
+            // })            
         })
     },[emotions])
   return (

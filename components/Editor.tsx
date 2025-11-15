@@ -6,12 +6,15 @@ import ContextMenu from "./ContextMenu";
 import { useEditorStore } from "@/tools/useEditorStore";
 import * as d3 from "d3";
 import { pipeline } from "@huggingface/transformers";
+import { toast } from "sonner"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useChatData } from "@/tools/store";
+import { createClient } from "@/utils/supabase/client";
+
 
 // ----------- Types -----------
 type EmotionLabel = string;
@@ -30,16 +33,43 @@ export default function SimpleRichTextEditor(): JSX.Element {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [editorPlaceholder, setEditorPlaceholder] = useState(true);
   const [lengthText, setLengthText] = useState(0);
-  
+  const [name,setname] = useState("")
+  const supabase = createClient()
+
+
+  useEffect(()=>{
+    const fetchUser = async ()=>{
+      const {data:{session}} = await createClient().auth.getSession()
+
+      setname(session?.user.email || "")
+
+      console.log(session)
+    }
+    fetchUser()
+  },[])
+
+  const saveToDatabase = async () =>{
+    const id = (await supabase.auth.getUser()).data.user?.id
+    const {data,error} = await supabase.from('Projects').insert({
+      title:'this is frontemd title',
+      content:'this is content and cool content from frontend',
+      user: id
+    })
+
+    console.log(error)
+
+  }
+ 
   // ✅ Zustand store
-  const emotions = useChatData((state) => state.emotions);
-  const setState = useChatData((state) => state.setState);
+  const emotions = useChatData((state:any) => state.emotions);
+  const setState = useChatData((state:any) => state.setState);
 
   const [formatState, setFormatState] = useState({
     italic: false,
     bold: false,
     underline: false,
   });
+
 
   const processCache = useRef<CacheMap>(new Map());
   const pipelineRef = useRef<any | null>(null);
@@ -64,25 +94,31 @@ export default function SimpleRichTextEditor(): JSX.Element {
     return h >>> 0;
   };
 
-  // ----------- Initialize pipeline -----------
-  useEffect(() => {
-    (async () => {
-      try {
-        const pipe = await pipeline(
+useEffect(()=>{
+
+toast.promise( new Promise(async (resolve)=>{
+  const pipe = await pipeline(
           "text-classification",
           "nicky48/emotion-english-distilroberta-base-ONNX",
           {
             dtype: "q4",
-            progress_callback: (data: any) => console.log("Loading model:", data),
           }
         );
+        resolve(pipe)
         pipelineRef.current = pipe;
         console.info("✅ HF pipeline ready");
-      } catch (err) {
-        console.error("⚠️ Failed to initialize model pipeline:", err);
       }
-    })();
-  }, []);
+      ),{
+        loading:"Loading Model ....",
+        success:"Model is succesfully loaded",
+        error:"Please check your internet connection"
+
+      }
+      )
+
+
+
+},[])
 
   // ----------- Call AI Model -----------
   const callPipeline = async (sentence: string): Promise<EmotionResult | null> => {
@@ -209,8 +245,10 @@ export default function SimpleRichTextEditor(): JSX.Element {
   // ----------- Render UI -----------
   return (
     <div className="relative p-6">
+      <input type="text" className="bg-white mb-3 p-2 rounded-xl w-full focus:outline-0" placeholder="Enter your Headline...."/>
+        
       {/* Toolbar */}
-      <div className="mb-3 flex gap-2 bg-gray-50 p-2 rounded-2xl justify-between">
+      <div className="mb-3 flex gap-2 bg-white p-2 rounded-2xl justify-between">
         <div className="flex gap-2">
           <Button
             size="sm"
@@ -233,6 +271,9 @@ export default function SimpleRichTextEditor(): JSX.Element {
           >
             <u>U</u>
           </Button>
+          <Button onClick={saveToDatabase}>
+            Save
+          </Button>
         </div>
         <div className="text-sm">{lengthText === 0 ? "" : `words ${lengthText}`}</div>
       </div>
@@ -247,7 +288,7 @@ export default function SimpleRichTextEditor(): JSX.Element {
         <div
           ref={editorRef}
           contentEditable
-          className="border border-gray-300 bg-white p-4 rounded-lg focus:outline-none shadow-sm h-[60vh] overflow-auto selection:bg-pink-100 selection:text-pink-950"
+          className=" bg-white p-4 rounded-lg focus:outline-0  h-[60vh] o selection:bg-pink-100 selection:text-pink-950"
           style={{ whiteSpace: "pre-wrap" }}
         ></div>
       </div>
