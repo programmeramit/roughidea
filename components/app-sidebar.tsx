@@ -28,20 +28,18 @@ export function AppSidebar() {
     <Sidebar className="bg-white border-r border-gray-200">
       {/* HEADER */}
       <SidebarHeader
-        className={`px-6 py-6 border-b border-gray-200 flex items-center ${
-          collapsed ? "justify-center px-3" : "justify-start"
-        }`}
+        className={`px-6 py-6 border-b border-gray-200 flex items-center ${collapsed ? "justify-center px-3" : "justify-start"
+          }`}
       >
         {!collapsed && (
-          <span className="font-bold text-xl text-[#3D4B44]">Rough Idea</span>
+          <span className="font-bold text-xl text-[#3D4B44]">Turn Your Ideas</span>
         )}
       </SidebarHeader>
 
       {/* CONTENT */}
       <SidebarContent
-        className={`flex-1 px-3 py-4 space-y-6 overflow-y-auto ${
-          collapsed ? "px-2" : ""
-        }`}
+        className={`flex-1 px-3 py-4 space-y-6 overflow-y-auto ${collapsed ? "px-2" : ""
+          }`}
       >
         <SidebarGroup>
           <div className="flex flex-col gap-1">
@@ -128,9 +126,8 @@ export function AppSidebar() {
 
       {/* FOOTER - SIGN OUT */}
       <SidebarFooter
-        className={`px-5 py-3 border-t border-gray-200 bg-white ${
-          collapsed ? "px-2 flex justify-center" : ""
-        }`}
+        className={`px-5 py-3 border-t border-gray-200 bg-white ${collapsed ? "px-2 flex justify-center" : ""
+          }`}
       >
         {collapsed ? (
           <User className="text-gray-500" size={20} />

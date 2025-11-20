@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono,Inter,Noto_Serif_Myanmar,Murecho} from "next/font/google";
+import { Geist, Geist_Mono, Inter, Noto_Serif_Myanmar, Murecho } from "next/font/google";
 import { Ruda, Indie_Flower } from 'next/font/google';
 import localFont from 'next/font/local'
 
@@ -15,21 +15,21 @@ const ruda = Ruda({
   weight: "400",
 });
 const murecho = Murecho({
-  subsets:["latin"],
-  variable:"--font-murecho",
-  weight:'400'
+  subsets: ["latin"],
+  variable: "--font-murecho",
+  weight: '400'
 }
 )
 
 const myFont = localFont({
-  src:[
+  src: [
     {
-      path:'../public/fonts/fontMyanmar.otf',
-      weight:'400',
-      style:'normal'
+      path: '../public/fonts/fontMyanmar.otf',
+      weight: '400',
+      style: 'normal'
     }
   ],
-  variable:'--font-myanmar'
+  variable: '--font-myanmar'
 })
 
 import "./globals.css";
@@ -46,20 +46,20 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Rough Idea",
+  title: "Turn Your Ideas",
   description: "Create emotion idea",
 };
 
 const geistInter = Inter(
   {
-    variable:"--font-inter"
+    variable: "--font-inter"
   }
 )
 
 const geistNoto = Noto_Serif_Myanmar(
   {
-    variable:'--font-noto',
-    weight:'100'
+    variable: '--font-noto',
+    weight: '100'
   }
 )
 

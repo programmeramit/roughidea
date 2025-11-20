@@ -50,64 +50,19 @@ export default function LoginPage() {
   }
   return (
     <div className="bg-[linear-gradient(45deg,_#1f2623_0%,_#4f5f59_50%,_#6f7f77_100%)] h-[100dvh] justify-center items-center flex">
-
-
-      <div className="flex md:h-3/4 rounded-[10px] drop-shadow-2xl  w-3/5  bg-[#F4F5F4] items-center justify-between">
-        <div className="h-full w-1/2 flex justify-center items-center">
-          <div className="bg-[linear-gradient(45deg,_#1f2623_0%,_#4f5f59_50%,_#6f7f77_100%)]  h-5/6 w-3/4 rounded-[10px]">
-
+      <div className="flex flex-col rounded-[10px] drop-shadow-2xl w-full max-w-md bg-[#F4F5F4] items-center justify-center p-8 m-4">
+        <h1 className="text-2xl font-bold mb-8 text-[#1f2623]">Welcome Back</h1>
+        <button
+          className="bg-white hover:bg-gray-50 border border-gray-200 font-bold p-4 w-full rounded-[10px] transition-colors duration-200"
+          onClick={signInWithGoogle}
+          type="button"
+        >
+          <div className="flex justify-center items-center gap-3">
+            <Image src={google} height={24} width={24} alt="Google logo" />
+            <span className="text-gray-700">Sign in with Google</span>
           </div>
-        </div>
-        <div className=" h-full w-1/2 flex justify-center items-center">
-          <div className="h-5/6  bg-white w-4/5 ">
-            <form className="p-4">
-              <div className="flex justify-between">
-                <div>
-                  <span className="font-inter text-black opacity-[90%]">Name</span>
-                  <input type="name" className="hover:outline-none bg-[#F8F8F8] p-2 outline-none rounded-[10px]" placeholder="name" />
-                </div>
-
-                <div>
-                  <span className="font-inter opacity-90">Email</span>
-                  <input type="email" className="hover:outline-none bg-[#F8F8F8] p-2 outline-none rounded-[10px]" placeholder="xyz@gmail.com" />
-
-                </div>
-
-
-              </div>
-              <div className="flex flex-col mt-4 gap-4">
-                <div>
-                  <span className="font-inter text-black opacity-[90%]">Password</span>
-                  <input type="text" className="w-full hover:outline-none bg-[#F8F8F8] p-2 outline-none rounded-[10px]" placeholder="Password" />
-
-                </div>
-                <div>
-                  <span className="font-inter text-black opacity-[90%]">Re-Enter Password</span>
-                  <input type="text" className="w-full hover:outline-none bg-[#F8F8F8] p-2 outline-none rounded-[10px]" placeholder="Re-Enter Password" />
-
-                </div>
-              </div>
-              <div className="flex justify-center items-center w-full mt-8 ">
-                <button className="p-4 bg-[linear-gradient(45deg,_#ABB3AE_0%,_#4A4D4B_100%)] w-3/4 font-bold text-white rounded-[10px] mt-4 ">SignUp</button>
-
-              </div>
-              <button className="bg-[#D9D9D9] font-bold p-2 w-full mt-18 rounded-[10px]" onClick={signInWithGoogle} type="button">
-                <div className="flex justify-center items-center gap-2">
-                  <Image src={google} height={30} width={30} alt="image of google" />
-                  <span className="opacity-60">            Sign in with Google
-                  </span>
-
-                </div>
-              </button>
-
-            </form>
-          </div>
-
-        </div>
-
-
+        </button>
       </div>
-
     </div>
   )
 }
