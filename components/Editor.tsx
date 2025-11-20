@@ -44,7 +44,7 @@ export default function SimpleRichTextEditor({ id: projectId, title: givenTitle 
   const supabase = createClient()
   const [loader, setloader] = useState(false)
   const [openEmoji, setopenEmoji] = useState(false)
-
+  const loadingStatus = useRef(0)
 
   const emotionColors = {
     anger: "coral",       // soft red
@@ -149,14 +149,18 @@ export default function SimpleRichTextEditor({ id: projectId, title: givenTitle 
         "nicky48/emotion-english-distilroberta-base-ONNX",
         {
           dtype: "q4",
-        }
+          progress_callback: (progress) => {
+            loadingStatus.current = Number(progress);
+          }
+        },
+
       );
       resolve(pipe)
       pipelineRef.current = pipe;
       console.info("✅ HF pipeline ready");
     }
     ), {
-      loading: "Loading Model ....",
+      loading: `Loading Model ${loadingStatus.current}%`,
       success: "Model is succesfully loaded",
       error: "Please check your internet connection"
 
