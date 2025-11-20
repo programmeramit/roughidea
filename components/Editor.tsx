@@ -44,7 +44,7 @@ export default function SimpleRichTextEditor({ id: projectId, title: givenTitle 
   const supabase = createClient()
   const [loader, setloader] = useState(false)
   const [openEmoji, setopenEmoji] = useState(false)
-  const loadingStatus = useRef(0)
+  const loadingStatus = useRef("")
 
   const emotionColors = {
     anger: "coral",       // soft red
@@ -150,7 +150,7 @@ export default function SimpleRichTextEditor({ id: projectId, title: givenTitle 
         {
           dtype: "q4",
           progress_callback: (progress) => {
-            loadingStatus.current = Number(progress);
+            loadingStatus.current = progress.status;
           }
         },
 
