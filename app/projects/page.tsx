@@ -30,52 +30,52 @@ import {
 } from "@/components/ui/dialog"
 
 function Page() {
-  const { register, handleSubmit ,watch,setValue} = useForm({
-    shouldUnregister:true,
-    defaultValues:{
-      firstName:'',
-      source:'',
-
+  const { register, handleSubmit, watch, setValue } = useForm({
+    shouldUnregister: true,
+    defaultValues: {
+      firstName: '',
+      source: '',
+      url: ''
     }
   })
-    const selected = watch("source")
-    console.log(selected)
-  
+  const selected = watch("source")
+  console.log(selected)
+
 
 
   // Multi-step screen state
   const [screen, setScreen] = useState(<Partone />)
-  const {data} = useQuery({
-    queryKey:["projects"],
-    queryFn:async()=>{
-         const supabase = createClient()
+  const { data } = useQuery({
+    queryKey: ["projects"],
+    queryFn: async () => {
+      const supabase = createClient()
       const user = (await supabase.auth.getUser()).data.user
 
-      const { data:projects } = await supabase
+      const { data: projects } = await supabase
         .from("Projects")
         .select("title,id")
         .eq("user", user?.id)
       return {
-        email:user?.email,
-        data:projects
+        email: user?.email,
+        data: projects
       }
 
     },
-    staleTime:1000*60*5,
-    
+    staleTime: 1000 * 60 * 5,
+
   })
 
- 
 
 
-const OPTIONS = [
-  { id: "youtube", label: "YouTube", icon: Youtube },
-  { id: "medium", label: "Medium", icon: FileText },
-  { id: "blog", label: "Blog", icon: BookOpen },
-  { id: "web", label: "Website", icon: Globe },
-  { id: "rss", label: "RSS", icon: Rss },
-  { id: "reddit", label: "Reddit", icon: MessageCircle },
-]
+
+  const OPTIONS = [
+    { id: "youtube", label: "YouTube", icon: Youtube },
+    { id: "medium", label: "Medium", icon: FileText },
+    { id: "blog", label: "Blog", icon: BookOpen },
+    { id: "web", label: "Website", icon: Globe },
+    { id: "rss", label: "RSS", icon: Rss },
+    { id: "reddit", label: "Reddit", icon: MessageCircle },
+  ]
 
 
   return (
@@ -111,40 +111,40 @@ const OPTIONS = [
               />
             </div>
 
-           
-      <div className="grid grid-cols-3 gap-4">
-        {OPTIONS.map((opt) => {
-          const Icon = opt.icon
-          const active = selected === opt.id
 
-          return (
-            <button
-              type="button"
-              key={opt.id}
-              onClick={() => setValue("source", opt.id)}
-              className={cn(
-                "flex flex-col items-center justify-center gap-2 rounded-xl border p-4 transition-all",
-                "hover:bg-accent hover:text-accent-foreground",
-                active
-                  ? "border-primary bg-primary/10 ring-2 ring-primary"
-                  : "border-muted"
-              )}
-            >
-              <Icon className={cn("h-6 w-6", active && "text-primary")} />
-              <span className="text-sm">{opt.label}</span>
-            </button>
-          )
-        })}
-      </div>
-      {
-        selected === "blog" && (
-          <div className="my-4 ">
-            <span>Enter the url </span>
-            <input {...register("url")}                 className="w-full rounded-md border bg-muted px-3 py-2 text-sm"
- />
-          </div>
-        )
-      }
+            <div className="grid grid-cols-3 gap-4">
+              {OPTIONS.map((opt) => {
+                const Icon = opt.icon
+                const active = selected === opt.id
+
+                return (
+                  <button
+                    type="button"
+                    key={opt.id}
+                    onClick={() => setValue("source", opt.id)}
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-2 rounded-xl border p-4 transition-all",
+                      "hover:bg-accent hover:text-accent-foreground",
+                      active
+                        ? "border-primary bg-primary/10 ring-2 ring-primary"
+                        : "border-muted"
+                    )}
+                  >
+                    <Icon className={cn("h-6 w-6", active && "text-primary")} />
+                    <span className="text-sm">{opt.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+            {
+              selected === "blog" && (
+                <div className="my-4 ">
+                  <span>Enter the url </span>
+                  <input {...register("url")} className="w-full rounded-md border bg-muted px-3 py-2 text-sm"
+                  />
+                </div>
+              )
+            }
 
             {/* Dynamic Multi-Step Component */}
             <div className="pt-2">{screen}</div>
@@ -177,16 +177,16 @@ const OPTIONS = [
 
         <span className="mt-1">{data?.email}</span>
 
-        {data && data?.data.map((item, i) => (
+        {data && data?.data?.map((item, i) => (
           <div key={i} className="mt-3">
             <div className="font-medium">{item.title}</div>
             <Link href={{
-              pathname:`/projects/${item.id}`,
-              query:{
-                title:item.title
+              pathname: `/projects/${item.id}`,
+              query: {
+                title: item.title
               }
             }}
-             className="text-blue-600 underline">
+              className="text-blue-600 underline">
               View Project
             </Link>
           </div>

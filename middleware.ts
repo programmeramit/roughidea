@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server';
 import { createClient } from './utils/supabase/server';
 
-export async function middleware(req:Request) {
+export async function middleware(req: Request) {
   const res = NextResponse.next();
-  const supabase = await  createClient();
+  const supabase = await createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  if (user) {
-    res.cookies.set('sb-access-token', user.access_token);
+  if (session) {
+    res.cookies.set('sb-access-token', session.access_token);
   }
 
   return res;

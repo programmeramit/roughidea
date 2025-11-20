@@ -19,7 +19,7 @@ interface EmotionChartProps extends PropsWithChildren {
 
 const EmotionChart: React.FC<EmotionChartProps> = () => {
   const chartRef = useRef<HTMLDivElement | null>(null);
-  const emotions = useChatData((state) => state.emotions);
+  const emotions = useChatData((state: any) => state.emotions as Record<string, EmotionResult>);
 
   useEffect(() => {
     if (!chartRef.current) return;
@@ -117,8 +117,8 @@ const EmotionChart: React.FC<EmotionChartProps> = () => {
         .data(values)
         .join("circle")
         .attr("class", `dot-${emotion}`)
-        .attr("cx", (d) => x(d.id)! + x.bandwidth() / 2)
-        .attr("cy", (d) => y(d.score))
+        .attr("cx", (d: any) => x(d.id)! + x.bandwidth() / 2)
+        .attr("cy", (d: any) => y(d.score))
         .attr("r", 0)
         .attr("fill", chartColor);
 

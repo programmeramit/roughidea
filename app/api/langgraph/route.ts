@@ -1,25 +1,35 @@
 import { NextResponse } from "next/server";
-import { Graph } from '@langchain/langgraph'
+import { StateGraph, Annotation, START, END } from '@langchain/langgraph'
 import { ChatGoogleGenerativeAI } from '@langchain/google-genai'
 
 
 const llm = new ChatGoogleGenerativeAI({
-    model:'gemini-1.5-flash',
-    apiKey:'AIzaSyA1td6t9F-kmG2RbGIXOmXK2Wgnk0uE-jA'
+  model: 'gemini-1.5-flash',
+  apiKey: process.env.GOOGLE_API_KEY,
 })
 
-const graph = new Graph()
-graph.addNode("greeter", async (inputs) => {
-  const msg = inputs.message
-  const res = await llm.invoke(`Say hi to: ${msg}`)
-  return { reply: res.content }
-}).compile()
+// Define the state using Annotation
+const StateAnnotation = Annotation.Root({
+  message: Annotation<string>,
+  reply: Annotation<string>,
+})
+
+const app = new StateGraph(StateAnnotation)
+  .addNode("greeter", async (state) => {
+    const msg = state.message
+    const res = await llm.invoke(`Say hi to: ${msg}`)
+    return { reply: res.content as string }
+  })
+  .addEdge(START, "greeter")
+  .addEdge("greeter", END)
+  .compile()
 
 
-export const GET = async  (req:Request)=>{
+export const POST = async (req: Request) => {
 
-    const { message } = await req.json()
-  const result = await graph.invoke({ message })
+  const { message } = await req.json()
+  // Initialize with default values if needed
+  const result = await app.invoke({ message, reply: "" })
   return NextResponse.json(result)
 
 }

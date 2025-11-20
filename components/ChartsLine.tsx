@@ -10,7 +10,18 @@ function ChartsLine() {
   const emotions = useChatData((state: any) => state.emotions)
   const ref = useRef(null)
 
-  const emotionColors: { [key: string]: string } = {
+
+  interface Emotion {
+    sentence: string;
+    label: string;
+    score: number;
+  }
+
+  interface emotionColors {
+    [key: string]: string;
+  }
+
+  const emotionColors: emotionColors = {
     anger: "coral",       // soft red
     disgust: "green",     // pale green
     fear: "slategray",    // muted gray-blue
@@ -53,7 +64,7 @@ function ChartsLine() {
                   </Tooltip>
                 </strong>
                 {res.sentence} : <span >{res.label}</span>{" "}
-                <ProgressBar completed={Math.round(res.score * 100)} bgColor={emotionColors[res.label]} width={300} height={10} />
+                <ProgressBar completed={Math.round(res.score * 100)} bgColor={emotionColors[res.label]} width={"300px"} height={"10px"} />
               </li>
             ))}
           </ul>

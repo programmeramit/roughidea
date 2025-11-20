@@ -7,7 +7,7 @@ export default function SignUp() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSignUp = async (e) => {
+  const handleSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const supabase = createClient();
     const { error } = await supabase.auth.signUp({ email, password });
@@ -27,7 +27,7 @@ export default function SignUp() {
         type="password"
         placeholder="Password"
         value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
         required
       />
       <button type="submit">Sign Up</button>
