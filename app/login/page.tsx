@@ -23,7 +23,7 @@ export default function LoginPage() {
       await supabase.auth.exchangeCodeForSession(window.location.href)
 
       const { data: { session } } = await supabase.auth.getSession();
-      router.push("/dashboard");
+      router.push("/projects");
 
 
 
