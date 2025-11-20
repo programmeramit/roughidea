@@ -1,53 +1,83 @@
 "use client"
-import React,{useEffect, useRef} from 'react'
-import * as  d3 from "d3"
+import React, { useEffect, useRef } from 'react'
 import { useChatData } from '@/tools/store'
+import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
+import ProgressBar from '@ramonak/react-progress-bar'
+import { Button } from './ui/button'
+
 function ChartsLine() {
-    //Using the variable from the zustand
-    const emotions = useChatData((state:any)=>state.emotions)
+  //Using the variable from the zustand
+  const emotions = useChatData((state: any) => state.emotions)
+  const ref = useRef(null)
 
-    //Ref of the SVG
-    const line_ref = useRef(null)
+  const emotionColors: { [key: string]: string } = {
+    anger: "coral",       // soft red
+    disgust: "green",     // pale green
+    fear: "slategray",    // muted gray-blue
+    joy: "yellow",        // warm happy yellow
+    neutral: "gray",      // balanced neutral gray
+    sadness: "lightblue",      // soft blue
+    surprise: "pink"      // bright unexpected pink
+  };
 
-    //Running the chart every time data is change in editor
-    useEffect(()=>{
-      //Get the current data 
-      const datas = Object.values(emotions).map((data:any)=>Math.round(data.score*100))
+  const sum = (Object.values(emotions) as any[]).reduce(
+    (total: number, { score }: { score: number }) => total + score,
+    0
+  )
+  const length = Object.values(emotions).length
 
-      //Assiging the width,height and barwidth
-      const width = 500;
-      const height = 300;
-      const barWidth = width / datas.length;
-
-      //Clear the previous elements of SVG
-      d3.select(line_ref.current).selectAll("*").remove()
-
-      //making the range 
-      const range = d3.scaleLinear().domain([0,d3.max(datas)]).range([height,0])
-      
-      //Creating the bar chart 
-      const svg = d3.select(line_ref.current).attr("width", width)
-      .attr("height", height);
-      svg.selectAll("rect")
-        .data(datas)
-        .enter()
-        .append("rect")
-        .attr("x", (d:Number, i:Number) => i * barWidth)
-        .attr("y", (d:Number) => range(d))
-        .attr("width", barWidth - 5)
-        .attr("height", (d:Number) => d)
-        .attr("fill", "green")
-
-    },[emotions]) //Assign the dependency variable
+  const number = Math.round(sum * 100 / length)
 
 
 
   return (
-    <div>ChartsLine
-        <svg className='' ref={line_ref}>
-            
-        </svg>
-        
+    <div className='mt-8 font-murecho'>
+      <span className='font-bold text-xl'>
+        Analysis
+      </span>
+      {/* Emotion results */}
+      <div className="mt-5">
+        <h3 className="font-semibold">Emotion Analysis Cache</h3>
+        {Object.keys(emotions).length === 0 ? (
+          <p className="text-sm text-gray-400">No sentences analyzed yet.</p>
+        ) : (
+          <ul className="list-disc pl-5 mt-2 text-sm">
+            {(Object.entries(emotions) as any[]).map(([sentence, res], i) => (
+              <li key={i}>
+                <strong>
+                  <Tooltip>
+                    <TooltipTrigger>{`s${i + 1}`}</TooltipTrigger>
+                    <TooltipContent>
+                      <p>{res.sentence}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </strong>
+                {res.sentence} : <span >{res.label}</span>{" "}
+                <ProgressBar completed={Math.round(res.score * 100)} bgColor={emotionColors[res.label]} width={300} height={10} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <div className='mt-4'>
+        <span className='text-xl opacity-60'>
+          Total Engagement Score
+        </span>
+        <br />
+        <span className='mx-2 font-bold text-2xl' ref={ref}>
+
+          {
+            number
+          }
+
+        </span>
+
+
+
+      </div>
+
+      {/* Emotion graph */}
+
     </div>
   )
 }

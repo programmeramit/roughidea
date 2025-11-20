@@ -3,18 +3,24 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import ContextMenu from "./ContextMenu";
-import { useEditorStore } from "@/tools/useEditorStore";
-import * as d3 from "d3";
+import { Loader } from "./Loader";
 import { pipeline } from "@huggingface/transformers";
 import { toast } from "sonner"
+import EmojiPicker from 'emoji-picker-react';
+import { Smile } from "lucide-react";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import ChartsLine from "./ChartsLine";
+
 import { useChatData } from "@/tools/store";
 import { createClient } from "@/utils/supabase/client";
-
+import { Ai, Underline, Redo, Undo, Italic } from "@/utils/icons/Icon";
 
 // ----------- Types -----------
 type EmotionLabel = string;
@@ -27,42 +33,85 @@ interface EmotionResult {
 type CacheMap = Map<string, EmotionResult>;
 
 // ----------- Component -----------
-export default function SimpleRichTextEditor(): JSX.Element {
+export default function SimpleRichTextEditor({ id: projectId, title: givenTitle }: { id: string | number, title: string }) {
   const editorRef = useRef<HTMLDivElement | null>(null);
   const [selectedText, setSelectedText] = useState("");
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
   const [editorPlaceholder, setEditorPlaceholder] = useState(true);
   const [lengthText, setLengthText] = useState(0);
-  const [name,setname] = useState("")
+  const [name, setname] = useState("")
+  const [title, settitle] = useState("")
   const supabase = createClient()
+  const [loader, setloader] = useState(false)
+  const [openEmoji, setopenEmoji] = useState(false)
 
 
-  useEffect(()=>{
-    const fetchUser = async ()=>{
-      const {data:{session}} = await createClient().auth.getSession()
+  const emotionColors = {
+    anger: "coral",       // soft red
+    disgust: "green",     // pale green
+    fear: "slategray",    // muted gray-blue
+    joy: "yellow",        // warm happy yellow
+    neutral: "gray",      // balanced neutral gray
+    sadness: "lightblue",      // soft blue
+    surprise: "pink"      // bright unexpected pink
+  };
 
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { session } } = await createClient().auth.getSession()
       setname(session?.user.email || "")
-
-      console.log(session)
     }
     fetchUser()
-  },[])
+  }, [])
 
-  const saveToDatabase = async () =>{
-    const id = (await supabase.auth.getUser()).data.user?.id
-    const {data,error} = await supabase.from('Projects').insert({
-      title:'this is frontemd title',
-      content:'this is content and cool content from frontend',
-      user: id
-    })
+  // Initialize editor content
+  useEffect(() => {
+    if (editorRef.current && givenTitle) {
+      // Only set if empty to avoid overwriting user work on re-renders
+      if (!editorRef.current.innerText.trim() || editorRef.current.innerText === givenTitle) {
+        editorRef.current.innerText = givenTitle;
+        setLengthText(givenTitle.length);
+        setEditorPlaceholder(false);
+      }
+    }
+  }, [givenTitle]);
 
-    console.log(error)
+
+  //ADD emoji 
+  const insertEmoji = (emoji: string) => {
+    const editor = editorRef.current;
+    if (!editor) return
+    editor.innerText += emoji;
 
   }
- 
+
+
+  const saveToDatabase = async () => {
+    setloader(true)
+    //Get the unique id of the user
+    const id = (await supabase.auth.getUser()).data.user?.id
+
+    const { data, error } = await supabase.from('Projects').upsert({
+      id: Number(projectId),
+      title: title,
+      content: editorRef.current?.innerHTML,
+      user: id
+    })
+    //Controling the error flow
+    if (!error) {
+      toast.message("Successfully saved")
+      setloader(false)
+
+    }
+    else {
+      console.log(error)
+      toast.message("Error while saving")
+    }
+  }
+
   // ✅ Zustand store
-  const emotions = useChatData((state:any) => state.emotions);
-  const setState = useChatData((state:any) => state.setState);
+  const emotions = useChatData((state: any) => state.emotions);
+  const setState = useChatData((state: any) => state.setState);
 
   const [formatState, setFormatState] = useState({
     italic: false,
@@ -73,10 +122,8 @@ export default function SimpleRichTextEditor(): JSX.Element {
 
   const processCache = useRef<CacheMap>(new Map());
   const pipelineRef = useRef<any | null>(null);
-  const chartRef = useRef<HTMLDivElement | null>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
-  const setEditorRef = useEditorStore((state: any) => state.setEditorRef);
 
   // ----------- Helper functions -----------
   const splitSentences = (text: string): string[] =>
@@ -94,31 +141,31 @@ export default function SimpleRichTextEditor(): JSX.Element {
     return h >>> 0;
   };
 
-useEffect(()=>{
+  useEffect(() => {
 
-toast.promise( new Promise(async (resolve)=>{
-  const pipe = await pipeline(
-          "text-classification",
-          "nicky48/emotion-english-distilroberta-base-ONNX",
-          {
-            dtype: "q4",
-          }
-        );
-        resolve(pipe)
-        pipelineRef.current = pipe;
-        console.info("✅ HF pipeline ready");
-      }
-      ),{
-        loading:"Loading Model ....",
-        success:"Model is succesfully loaded",
-        error:"Please check your internet connection"
+    toast.promise(new Promise(async (resolve) => {
+      const pipe = await pipeline(
+        "text-classification",
+        "nicky48/emotion-english-distilroberta-base-ONNX",
+        {
+          dtype: "q4",
+        }
+      );
+      resolve(pipe)
+      pipelineRef.current = pipe;
+      console.info("✅ HF pipeline ready");
+    }
+    ), {
+      loading: "Loading Model ....",
+      success: "Model is succesfully loaded",
+      error: "Please check your internet connection"
 
-      }
-      )
+    }
+    )
 
 
 
-},[])
+  }, [])
 
   // ----------- Call AI Model -----------
   const callPipeline = async (sentence: string): Promise<EmotionResult | null> => {
@@ -238,15 +285,15 @@ toast.promise( new Promise(async (resolve)=>{
 
   // ----------- Toolbar actions -----------
   const formatText = (command: string) => {
-    document.execCommand(command, false, null);
+    document.execCommand(command, false);
     updateToolState();
   };
 
   // ----------- Render UI -----------
   return (
-    <div className="relative p-6">
-      <input type="text" className="bg-white mb-3 p-2 rounded-xl w-full focus:outline-0" placeholder="Enter your Headline...."/>
-        
+    <div className="p-6">
+      <input type="text" className="bg-white mb-3 p-2 rounded-xl w-full focus:outline-0" placeholder="Enter your Headline...." onChange={(e) => settitle(e.target.value)} />
+
       {/* Toolbar */}
       <div className="mb-3 flex gap-2 bg-white p-2 rounded-2xl justify-between">
         <div className="flex gap-2">
@@ -262,33 +309,66 @@ toast.promise( new Promise(async (resolve)=>{
             onClick={() => formatText("italic")}
             className={`bg-white text-black ${formatState.italic ? "bg-gray-200" : ""}`}
           >
-            <i>I</i>
+            <Italic size={20} />
           </Button>
           <Button
             size="sm"
             onClick={() => formatText("underline")}
             className={`bg-white text-black ${formatState.underline ? "bg-gray-200" : ""}`}
           >
-            <u>U</u>
+            <Underline size={20} />
+
           </Button>
-          <Button onClick={saveToDatabase}>
-            Save
+
+          <Button
+            size="sm"
+            onClick={() => setopenEmoji((prev) => !prev)}
+            className={`bg-white text-black ${openEmoji ? "bg-gray-200" : ""}`}
+          >
+            <Smile size={50} />
           </Button>
+
+          <Button
+            size="sm"
+            onClick={() => { /* Placeholder for AI action */ console.log("AI Action triggered") }}
+            className={`bg-white text-black`}
+          >
+            <Ai size={20} />
+          </Button>
+
+          <Sheet>
+            <SheetTrigger className="md:hidden block">Open</SheetTrigger>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Are you absolutely sure?</SheetTitle>
+                <SheetDescription>
+                  <ChartsLine />
+                </SheetDescription>
+              </SheetHeader>
+            </SheetContent>
+          </Sheet>
+
+          <EmojiPicker open={openEmoji} style={{ position: "absolute", zIndex: 10, marginTop: '40px' }} onEmojiClick={(emoji) => { setopenEmoji(false); insertEmoji(emoji.emoji) }} />
+
         </div>
-        <div className="text-sm">{lengthText === 0 ? "" : `words ${lengthText}`}</div>
+        <div className="text-sm"> <Button onClick={saveToDatabase}>
+          {
+            loader ? <Loader size={24} /> : 'Save'
+          }
+        </Button></div>
       </div>
 
       {/* Editable area */}
-      <div className="relative">
-        {editorPlaceholder && (
+      <div >
+        {editorPlaceholder && lengthText === 0 || lengthText === 1 ? (
           <span className="absolute text-gray-400 pointer-events-none select-none top-4 left-5">
             Enter your idea here...
           </span>
-        )}
+        ) : ''}
         <div
           ref={editorRef}
           contentEditable
-          className=" bg-white p-4 rounded-lg focus:outline-0  h-[60vh] o selection:bg-pink-100 selection:text-pink-950"
+          className=" bg-white p-4 rounded-lg focus:outline-0  h-[60vh]  selection:bg-pink-100 selection:text-pink-950"
           style={{ whiteSpace: "pre-wrap" }}
         ></div>
       </div>
@@ -296,33 +376,6 @@ toast.promise( new Promise(async (resolve)=>{
       {contextMenu && selectedText && (
         <ContextMenu x={contextMenu.x} y={contextMenu.y} trigger={setContextMenu} />
       )}
-
-      {/* Emotion results */}
-      <div className="mt-5">
-        <h3 className="font-semibold">Emotion Analysis Cache</h3>
-        {Object.keys(emotions).length === 0 ? (
-          <p className="text-sm text-gray-400">No sentences analyzed yet.</p>
-        ) : (
-          <ul className="list-disc pl-5 mt-2 text-sm">
-            {Object.entries(emotions).map(([sentence, res], i) => (
-              <li key={i}>
-                <strong>
-                  <Tooltip>
-                    <TooltipTrigger>{`s${i + 1}`}</TooltipTrigger>
-                    <TooltipContent>
-                      <p>{res.sentence}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </strong>
-                : <span className="text-blue-600">{res.label}</span>{" "}
-                ({Math.round(res.score * 100)}%)
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-   {/* Emotion graph */}
-
     </div>
   );
 }
