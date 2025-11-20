@@ -5,12 +5,15 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 async function page() {
-  const { data: { session } } = await (await (createClient())).auth.getSession()
-
-
-
-
-  console.log(session)
+  let session = null
+  try {
+    const supabase = await createClient()
+    const { data } = await supabase.auth.getSession()
+    session = data.session
+    console.log(session)
+  } catch (error) {
+    console.error("Error fetching session:", error)
+  }
 
 
   return (
@@ -23,7 +26,7 @@ async function page() {
           <span className='font-murecho'>Support</span>
           <Button className='bg-[#536358] hover:bg-[#536358]'>
             {
-              !!session ? <Link href={"/dashboard"}>Dashboard</Link> : <Link href={"/login"}>Login  </Link>
+              !!session ? <Link href={"/projects"}>Dashboard</Link> : <Link href={"/login"}>Login  </Link>
 
             }
 

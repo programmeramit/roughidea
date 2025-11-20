@@ -9,7 +9,6 @@ import { cn } from "@/lib/utils"
 import { useQuery } from "@tanstack/react-query"
 
 import Partone from "@/components/Partone"
-import Parttwo from "@/components/Parttwo"
 
 import {
   Youtube,
@@ -21,7 +20,6 @@ import {
 } from "lucide-react"
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -33,18 +31,23 @@ function Page() {
   const { register, handleSubmit, watch, setValue } = useForm({
     shouldUnregister: true,
     defaultValues: {
-      firstName: '',
+      title: '',
       source: '',
       url: ''
     }
   })
+
+  // dialog trigger in control way
+
+  const [open, setOpen] = useState(false)
+
   const selected = watch("source")
-  console.log(selected)
 
 
 
   // Multi-step screen state
   const [screen, setScreen] = useState(<Partone />)
+
   const { data } = useQuery({
     queryKey: ["projects"],
     queryFn: async () => {
@@ -53,7 +56,7 @@ function Page() {
 
       const { data: projects } = await supabase
         .from("Projects")
-        .select("title,id")
+        .select("title,id,created_at")
         .eq("user", user?.id)
       return {
         email: user?.email,
@@ -64,11 +67,16 @@ function Page() {
     staleTime: 1000 * 60 * 5,
 
   })
+  interface data {
+    id: string,
+    label: string,
+    icon: any
+  }
 
 
 
 
-  const OPTIONS = [
+  const OPTIONS: data[] = [
     { id: "youtube", label: "YouTube", icon: Youtube },
     { id: "medium", label: "Medium", icon: FileText },
     { id: "blog", label: "Blog", icon: BookOpen },
@@ -82,15 +90,13 @@ function Page() {
     <div className="h-[100dvh] bg-[#F8F8F8] w-full">
 
       {/* -------------------- Dialog -------------------- */}
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button variant="outline">Open Dialog</Button>
-        </DialogTrigger>
+      <Dialog open={open} onOpenChange={setOpen}>
+
 
         <DialogContent className="max-w-8xl rounded-xl p-8">
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold text-center">
-              User Information
+              Create Project
             </DialogTitle>
             <DialogDescription className="text-center text-sm">
               Fill the details below
@@ -103,11 +109,11 @@ function Page() {
             onSubmit={handleSubmit((e) => console.log(e))}
           >
             <div className="flex flex-col space-y-1">
-              <label className="text-sm font-medium">First Name</label>
+              <label className="text-sm font-medium">Title</label>
               <input
-                {...register("firstName")}
+                {...register("title")}
                 className="w-full rounded-md border bg-muted px-3 py-2 text-sm"
-                placeholder="Enter first name"
+                placeholder="Enter title"
               />
             </div>
 
@@ -139,7 +145,7 @@ function Page() {
             {
               selected === "blog" && (
                 <div className="my-4 ">
-                  <span>Enter the url </span>
+                  <span>Enter the url <span className="text-red-500">*</span> </span>
                   <input {...register("url")} className="w-full rounded-md border bg-muted px-3 py-2 text-sm"
                   />
                 </div>
@@ -150,14 +156,7 @@ function Page() {
             <div className="pt-2">{screen}</div>
 
             {/* Switch Screen */}
-            <Button
-              type="button"
-              className="w-full"
-              variant="secondary"
-              onClick={() => setScreen(<Parttwo />)}
-            >
-              Change Screen
-            </Button>
+
 
             {/* Submit */}
             <DialogFooter>
@@ -171,26 +170,46 @@ function Page() {
 
       {/* -------------------- PAGE CONTENT -------------------- */}
       <div className="flex flex-col p-4 mt-6">
-        <span className="font-myanmar text-2xl opacity-60">
-          Welcome Back
-        </span>
 
-        <span className="mt-1">{data?.email}</span>
+        <div className="flex justify-between items-center">
+          <span className="font-myanmar text-2xl opacity-60">
+            Welcome Back         <span className="mt-1 text-xl opacity-60 font-murecho mx-2">{data?.email}</span>
 
-        {data && data?.data?.map((item, i) => (
-          <div key={i} className="mt-3">
-            <div className="font-medium">{item.title}</div>
-            <Link href={{
-              pathname: `/projects/${item.id}`,
-              query: {
-                title: item.title
-              }
-            }}
-              className="text-blue-600 underline">
-              View Project
-            </Link>
-          </div>
-        ))}
+          </span>
+          <Button onClick={() => setOpen(true)}>
+            Create Project
+
+          </Button>
+
+        </div>
+
+
+        <div className="grid md:grid-cols-3 gap-4 p-4 rounded-[10px]">
+
+          {data && data?.data?.map((item, i) => (
+            <div key={i} className="bg-[#F4F5F4] p-4 rounded-[10px]">
+              <div className="font-medium">{item.title}</div>
+              <div className="flex justify-between items-center mt-4 row-reverse">
+                <Link href={{
+                  pathname: `/projects/${item.id}`,
+                  query: {
+                    title: item.title
+                  }
+                }}
+
+
+                >
+                  <span className="p-2  bg-[#536358] text-white rounded-[10px] text-sm">
+                    View Project
+                  </span>
+                </Link>
+                <span className="text-sm opacity-60">
+                  {(new Date(item.created_at).toDateString())}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )
