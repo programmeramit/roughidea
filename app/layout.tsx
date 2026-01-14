@@ -3,6 +3,8 @@ import { Geist, Geist_Mono, Inter, Noto_Serif_Myanmar, Murecho } from "next/font
 import { Ruda, Indie_Flower } from 'next/font/google';
 import localFont from 'next/font/local'
 
+// get the data
+
 const indie = Indie_Flower({
   subsets: ["latin"],
   variable: "--font-indie",
